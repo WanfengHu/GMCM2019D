@@ -35,7 +35,8 @@ min_revolution = 600;
 for i = 1:length(idx)-1
     d.raw = rawdata(idx(i):idx(i+1)-1, :);
     d.raw_stats = statistics(d.raw);
-    d.processed = preprocess(d.raw, min_revolution);
+    [d.processed, flag_stall] = preprocess(d.raw, min_revolution);
+    d.stall = flag_stall;
     d.processed_stats = statistics(d.processed);
 end
 %%

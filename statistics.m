@@ -1,4 +1,8 @@
 function stats = statistics(piece)
+    if isempty(piece)
+        stats = [];
+        return
+    end
     % Velocity
     vel = piece.velocity;
     stats.mean_vel =  mean(vel);
