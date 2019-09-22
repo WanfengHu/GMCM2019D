@@ -1,9 +1,9 @@
-function [processed, flag] = preprocess(raw, min_revolution)
+function [processed, flag] = preprocess(raw, min_revolution, thresh)
     % Long period pause
-    thresh = seconds(180);
     [pro, flag] = stall(raw, min_revolution, thresh);
     
-    if (nnz(pro.velocity>0) <=5 && max(pro.velocity) > 10)
+    if (nnz(pro.velocity>0) <=5 && max(pro.velocity) > 10) || ...
+            length(pro.velocity) < 20
         processed = [];
         return
     end
@@ -22,33 +22,21 @@ function [processed, flag] = preprocess(raw, min_revolution)
     pro(location_abnormal, :) = [];
     
     % GPS signal lost --> incontinuous in time
-    processed = array2table(interp1(pro.time, pro{:, 2:end}, new_timeseries));
+    processed = array2table(interp1(pro.time, pro{:, 2:end}, new_timeseries, 'linear', 'extrap'));
     processed = addvars(processed, new_timeseries', 'Before',1);
     processed.Properties.VariableNames = header;
     
     % Max idle time is 180s
-    st_idle=1;
-    for j=2:length(processed.velocity)
-        if (processed.engine_revolution(j-1)<min_revolution)&&(min_revolution<=processed.engine_revolution(j))
-            st_idle=j;
-            break;
-        end
-    end
-    [~,ind]=min(processed.engine_revolution(1:st_idle));
-    list_idle=st_idle:length(processed.velocity);
-    list_idle(processed.velocity(st_idle:end)==0)=[];
-    end_idle=list_idle(1);
-    
-    if processed.time(st_idle)-processed.time(ind)>seconds(180)
-        processed(ind:ind+180,:)=[];
-    end
-    if processed.time(end_idle)-processed.time(st_idle)>seconds(180)
-        processed(end_idle-180:end_idle,:)=[];
+    idx = find(processed.velocity>0, 1);
+    if (processed.time(idx) - processed.time(1)) > seconds(180)
+        processed(1:idx-180, :) = [];
     end
     
-    ps_time=seconds(1:length(processed.time));
-    processed.time=ps_time';
-    
-    
-    % 4. congestion (max_velocity < 10 km/h) --> idle
+    % Validation
+    rule1 = length(processed.velocity) >= length(raw.velocity) * 5 && ...
+            (length(processed.velocity) - length(raw.velocity)) >= 15*60;
+    rule2 = max(processed.velocity) > 140;
+    if rule1 || rule2
+        processed = [];
+    end
 end

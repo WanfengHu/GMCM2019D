@@ -3,6 +3,7 @@ function stats = statistics(piece)
         stats = [];
         return
     end
+    
     % Velocity
     vel = piece.velocity;
     stats.mean_vel =  mean(vel);
@@ -31,7 +32,13 @@ function stats = statistics(piece)
     stats.dec_percent = nnz(deceleration)/total;
     stats.total_time = total;
     
+    % Congestion (max_velocity < 10 km/h) --> idle
+    if stats.max_vel < 10
+        stats.idle_percent = 1;
+        stats.acc_percent = 0;
+        stats.dec_percent = 0;
+    end
+    
     % Distance
     stats.distance = trapz(vel)/3600;
-    
 end
