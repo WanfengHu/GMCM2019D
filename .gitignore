@@ -1,2 +1,7 @@
 *.asv
 *.mlx
+*.eps
+*.fig
+*.mat
+*.7z
+*.zip
