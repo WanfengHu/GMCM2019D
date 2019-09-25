@@ -1,3 +1,10 @@
+% statistics calculates stats for a micro trip.
+% result is a structure containing max velocity, average velocity, average 
+% driving velocity etc.
+%
+% Usage:
+%   stats = statistics(piece) 
+
 function stats = statistics(piece)
     if isempty(piece)
         stats = [];

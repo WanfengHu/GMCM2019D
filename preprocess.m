@@ -1,7 +1,23 @@
+% preprocess cleans a micro trip based on some assumptions and rules.
+%   
+% Usage:
+%   [processed, flag] = preprocess(raw, min_revolution, thresh)  
+%
+% Inputs:
+%   raw: raw data for a micro trip.
+%   min_revolution: a threshold for engine revolution below which it will
+%   stall, used in function stall.
+%   thresh: a time threshold to be used in function stall.
+%   
+% Outputs:  
+%   processed: processed data.
+%   flag: a flag indicates if the trip is processed by function stall.
+
 function [processed, flag] = preprocess(raw, min_revolution, thresh)
-    % Long period pause
+    % Check stall
     [pro, flag] = stall(raw, min_revolution, thresh);
     
+    % Only process trip with enough data
     if (nnz(pro.velocity>0) <=5 && max(pro.velocity) > 10) || ...
             length(pro.velocity) < 20
         processed = [];
